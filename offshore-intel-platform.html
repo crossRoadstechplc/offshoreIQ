@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OffshoreIQ — Jurisdiction Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f7fb;
+  --bg2: #ffffff;
+  --bg3: #eef2f7;
+  --bg4: #dbe4ef;
+  --border: rgba(15,23,42,0.08);
+  --border2: rgba(15,23,42,0.14);
+  --text: #0f172a;
+  --text2: #475569;
+  --text3: #64748b;
+  --accent: #3b82f6;
+  --accent2: #60a5fa;
+  --gold: #f59e0b;
+  --gold2: #fbbf24;
+  --green: #10b981;
+  --green2: #34d399;
+  --red: #ef4444;
+  --red2: #f87171;
+  --amber: #f59e0b;
+  --teal: #14b8a6;
+  --purple: #8b5cf6;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --serif: 'Instrument Serif', serif;
+  --r: 8px;
+  --r2: 12px;
+}
+body.dark-theme{
+  --bg: #0a0e1a;
+  --bg2: #111827;
+  --bg3: #1a2235;
+  --bg4: #222d42;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.14);
+  --text: #e8eaf0;
+  --text2: #8b93a8;
+  --text3: #555f7a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── ACCESS GATE ── */
+#gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:32px}
+.gate-logo{font-family:var(--serif);font-size:36px;color:var(--text);letter-spacing:-0.5px}
+.gate-logo span{color:var(--gold)}
+.gate-sub{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase}
+.gate-box{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r2);padding:32px;width:320px;display:flex;flex-direction:column;gap:16px}
+.gate-box label{font-size:12px;color:var(--text2);font-family:var(--mono)}
+.gate-box input{background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r);padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:14px;width:100%;outline:none}
+.gate-box input:focus{border-color:var(--accent)}
+.gate-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:11px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s}
+.gate-btn:hover{background:var(--accent2)}
+.gate-err{font-size:12px;color:var(--red);font-family:var(--mono);text-align:center;min-height:16px}
+
+/* ── LAYOUT ── */
+#app{display:none;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:52px;background:var(--bg2);border-bottom:0.5px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:20px;flex-shrink:0}
+.topbar-logo{font-family:var(--serif);font-size:20px;color:var(--text);letter-spacing:-0.3px;margin-right:8px}
+.topbar-logo span{color:var(--gold)}
+.topbar-tag{font-family:var(--mono);font-size:10px;color:var(--text3);border:0.5px solid var(--border2);padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.1em}
+.theme-toggle{padding:5px 12px;font-size:11px;font-family:var(--mono);min-width:92px;justify-content:center}
+.ribbon{height:44px;background:var(--bg2);border-bottom:0.5px solid var(--border);display:flex;align-items:stretch;padding:0 12px;gap:2px;overflow-x:auto;flex-shrink:0}
+.ribbon::-webkit-scrollbar{display:none}
+.rtab{display:flex;align-items:center;gap:7px;padding:0 14px;font-size:12.5px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s;user-select:none}
+.rtab:hover{color:var(--text2)}
+.rtab.on{color:var(--text);border-bottom-color:var(--gold)}
+.rtab svg{width:14px;height:14px;opacity:.7}
+.rtab.on svg{opacity:1}
+.main{flex:1;overflow-y:auto;overflow-x:hidden}
+.page{display:none;padding:24px;max-width:1400px;margin:0 auto}
+.page.on{display:block}
+
+/* ── COMMON COMPONENTS ── */
+.pg-title{font-family:var(--serif);font-size:26px;color:var(--text);margin-bottom:4px}
+.pg-sub{font-size:13px;color:var(--text2);margin-bottom:24px;font-family:var(--mono)}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);padding:20px}
+.card-sm{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:14px}
+.label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.badge{display:inline-flex;align-items:center;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500}
+.badge-g{background:rgba(16,185,129,.15);color:var(--green2)}
+.badge-r{background:rgba(239,68,68,.15);color:var(--red2)}
+.badge-a{background:rgba(245,158,11,.15);color:var(--gold2)}
+.badge-b{background:rgba(59,130,246,.15);color:var(--accent2)}
+.badge-p{background:rgba(139,92,246,.15);color:#a78bfa}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);border:0.5px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:var(--sans);cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--bg4);border-color:var(--border2)}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-accent:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn-gold{background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3);color:var(--gold2)}
+.btn-gold:hover{background:rgba(245,158,11,.25)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.divider{height:0.5px;background:var(--border);margin:20px 0}
+input,select,textarea{background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r);padding:9px 12px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--bg2)}
+.stat{background:var(--bg3);border-radius:var(--r);padding:14px 16px}
+.stat-val{font-family:var(--mono);font-size:22px;font-weight:500;color:var(--text);margin-bottom:3px}
+.stat-label{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.good{color:var(--green2)}.warn{color:var(--gold2)}.bad{color:var(--red2)}.neu{color:var(--text2)}
+.bar-row{display:flex;align-items:center;gap:10px;margin:5px 0}
+.bar-lbl{font-size:11px;color:var(--text2);width:110px;text-align:right;font-family:var(--mono);flex-shrink:0}
+.bar-track{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.bar-num{font-family:var(--mono);font-size:10px;color:var(--text3);width:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;font-size:11px;font-weight:500;color:var(--text3);font-family:var(--mono);border-bottom:0.5px solid var(--border);text-transform:uppercase;letter-spacing:.06em}
+td{padding:9px 12px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.pill-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{font-size:11px;padding:3px 9px;border-radius:20px;border:0.5px solid var(--border2);color:var(--text2);font-family:var(--mono)}
+.pill-g{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:var(--green2)}
+.pill-r{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:var(--red2)}
+.pill-a{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--gold2)}
+
+/* ── MODULE 1: COMPARE ── */
+.j-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.j-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);padding:16px;cursor:pointer;transition:all .15s}
+.j-card:hover{border-color:var(--border2);background:var(--bg3)}
+.j-card.active{border-color:var(--accent);background:var(--bg3)}
+.j-flag{font-size:26px;margin-bottom:8px}
+.j-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.j-type{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:10px}
+.j-rate{font-family:var(--mono);font-size:20px;font-weight:500;margin-bottom:4px}
+.filter-strip{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.filter-btn{font-size:11px;padding:4px 12px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;font-family:var(--mono);transition:all .15s}
+.filter-btn:hover{color:var(--text2);border-color:var(--border2)}
+.filter-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.detail-panel{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);margin-top:16px;overflow:hidden}
+.detail-header{padding:20px 24px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:16px}
+.detail-flag{font-size:36px}
+.detail-body{padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px}
+.detail-section h4{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.kv-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+.kv-row:last-child{border-bottom:none}
+.kv-k{color:var(--text2)}
+
+/* ── MODULE 2: AI AGENT ── */
+.agent-layout{display:grid;grid-template-columns:280px 1fr;gap:0;height:calc(100vh - 96px);background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.agent-sidebar{border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.agent-sidebar-top{padding:16px;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.agent-sidebar-title{font-size:12px;font-weight:500;margin-bottom:12px;color:var(--text)}
+.prompt-chip{font-size:11px;padding:8px 10px;border-radius:6px;border:0.5px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;margin-bottom:6px;line-height:1.4;transition:all .15s;font-family:var(--mono)}
+.prompt-chip:hover{border-color:var(--accent);color:var(--text)}
+.agent-sidebar-bottom{padding:12px;flex:1;overflow-y:auto}
+.agent-sidebar-label{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.chat-area{display:flex;flex-direction:column;overflow:hidden}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;gap:12px;align-items:flex-start}
+.msg-avatar{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;font-family:var(--mono)}
+.msg-u .msg-avatar{background:rgba(245,158,11,.2);color:var(--gold2)}
+.msg-a .msg-avatar{background:rgba(59,130,246,.2);color:var(--accent2)}
+.msg-bubble{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r2);padding:12px 16px;font-size:13px;line-height:1.7;color:var(--text);max-width:720px}
+.msg-u .msg-bubble{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)}
+.chat-input-area{padding:16px 20px;border-top:0.5px solid var(--border);display:flex;gap:10px;align-items:flex-end;background:var(--bg2)}
+.chat-input-area textarea{flex:1;resize:none;min-height:42px;max-height:120px;font-size:13px;line-height:1.5;padding:10px 14px}
+.api-key-bar{padding:12px 20px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg3);font-size:12px;color:var(--text2)}
+.api-key-bar input{flex:1;font-family:var(--mono);font-size:12px}
+.thinking{display:flex;gap:4px;align-items:center;padding:4px 0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:pulse 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* ── MODULE 3: STRUCTURE BUILDER ── */
+.builder-canvas{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r2);min-height:420px;position:relative;overflow:hidden;padding:20px}
+.entity-node{position:absolute;background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r2);padding:14px 18px;cursor:move;min-width:160px;text-align:center;user-select:none;transition:border-color .15s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.entity-node:hover,.entity-node.dragging{border-color:var(--accent);z-index:10}
+.entity-node.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.entity-flag{font-size:20px;margin-bottom:4px}
+.entity-name{font-size:12px;font-weight:500;color:var(--text)}
+.entity-type{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.entity-tax{font-family:var(--mono);font-size:11px;color:var(--green2);margin-top:4px}
+.builder-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+.builder-palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:16px}
+.palette-item{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;font-size:12px}
+.palette-item:hover{border-color:var(--accent);background:var(--bg4)}
+.conn-line{position:absolute;pointer-events:none;z-index:0}
+.builder-note{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:10px}
+.canvas-wrap{position:relative}
+svg.connectors{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+
+/* ── MODULE 4: COST CALCULATOR ── */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.calc-input-group{display:flex;flex-direction:column;gap:12px}
+.calc-row{display:flex;flex-direction:column;gap:5px}
+.calc-row label{font-size:12px;color:var(--text2);font-family:var(--mono)}
+.calc-row input,.calc-row select{width:100%}
+.result-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.result-card{background:var(--bg3);border-radius:var(--r);padding:16px}
+.result-val{font-family:var(--mono);font-size:26px;font-weight:500;margin-bottom:4px}
+.result-label{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.waterfall{margin-top:20px}
+.wf-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.wf-row:last-child{border-bottom:none;font-weight:500;padding-top:10px}
+.wf-label{color:var(--text2)}
+.wf-val{font-family:var(--mono)}
+
+/* ── MODULE 5: COMPLIANCE ── */
+.risk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.risk-card{background:var(--bg2);border-radius:var(--r2);border:0.5px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:10px}
+.risk-header{display:flex;align-items:center;justify-content:space-between}
+.risk-name{font-size:14px;font-weight:500}
+.risk-score{font-family:var(--mono);font-size:22px;font-weight:500}
+.risk-meter{height:4px;border-radius:2px;background:var(--bg4);overflow:hidden;margin:2px 0}
+.risk-fill{height:100%;border-radius:2px}
+.risk-tags{display:flex;flex-wrap:wrap;gap:4px}
+.checklist{display:flex;flex-direction:column;gap:8px}
+.check-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);border:0.5px solid var(--border)}
+.check-icon{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
+.check-icon.pass{background:rgba(16,185,129,.2);color:var(--green2)}
+.check-icon.fail{background:rgba(239,68,68,.2);color:var(--red2)}
+.check-icon.warn{background:rgba(245,158,11,.2);color:var(--gold2)}
+.check-text{font-size:12px;color:var(--text);line-height:1.5}
+.check-sub{font-size:11px;color:var(--text2);margin-top:2px;font-family:var(--mono)}
+
+/* ── MODULE 6: SCENARIOS ── */
+.scenario-list{display:flex;flex-direction:column;gap:8px}
+.scenario-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:all .15s}
+.scenario-card:hover{border-color:var(--border2);background:var(--bg3)}
+.scenario-icon{width:36px;height:36px;border-radius:var(--r);background:rgba(59,130,246,.15);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.scenario-meta{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px}
+.scenario-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.empty-state{text-align:center;padding:40px;color:var(--text3);font-family:var(--mono);font-size:13px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;display:none}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:0.5px solid var(--border2);border-radius:var(--r2);padding:28px;width:520px;max-height:80vh;overflow-y:auto}
+.modal-title{font-family:var(--serif);font-size:20px;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text2);margin-bottom:20px;font-family:var(--mono)}
+.form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-row label{font-size:12px;color:var(--text2);font-family:var(--mono)}
+.form-row input,.form-row select,.form-row textarea{width:100%}
+
+/* ── MODULE 7: DOCUMENT GENERATOR ── */
+.doc-templates{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:24px}
+.doc-template{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);padding:16px;cursor:pointer;transition:all .15s;text-align:center}
+.doc-template:hover{border-color:var(--accent);background:var(--bg3)}
+.doc-template.active{border-color:var(--gold)}
+.doc-icon{font-size:28px;margin-bottom:8px}
+.doc-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.doc-desc{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.doc-output{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r2);padding:24px;font-size:13px;line-height:1.8;color:var(--text2);white-space:pre-wrap;min-height:200px;font-family:var(--mono);position:relative}
+.doc-generating{display:flex;align-items:center;gap:10px;color:var(--text3);font-family:var(--mono);font-size:12px;padding:16px 0}
+
+/* scrollable chat */
+.chat-messages{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+<!-- ACCESS GATE -->
+<div id="gate">
+  <div>
+    <div class="gate-logo">Offshore<span>IQ</span></div>
+    <div class="gate-sub" style="text-align:center;margin-top:4px">Jurisdiction Intelligence Platform</div>
+  </div>
+  <div class="gate-box">
+    <label>Team access code</label>
+    <input type="password" id="pwInput" placeholder="Enter access code" onkeydown="if(event.key==='Enter')tryLogin()">
+    <button class="gate-btn" onclick="tryLogin()">Access platform</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--text3)">Internal use only · Confidential</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">Offshore<span>IQ</span></div>
+    <div class="topbar-tag">v1.0 · Internal</div>
+    <div style="flex:1"></div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--text3)" id="topbar-date"></div>
+    <button class="btn theme-toggle" id="themeToggle" onclick="toggleTheme()"></button>
+    <button class="btn" style="padding:5px 12px;font-size:11px" onclick="logout()">Sign out</button>
+  </div>
+
+  <div class="ribbon">
+    <div class="rtab on" onclick="showPage('compare',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Jurisdiction Compare
+    </div>
+    <div class="rtab" onclick="showPage('agent',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      AI Structuring Agent
+    </div>
+    <div class="rtab" onclick="showPage('builder',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Structure Builder
+    </div>
+    <div class="rtab" onclick="showPage('calc',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3M9 7V5a2 2 0 012-2h7a2 2 0 012 2v7a2 2 0 01-2 2h-2M9 7h2a2 2 0 012 2v2"/></svg>
+      Cost Calculator
+    </div>
+    <div class="rtab" onclick="showPage('compliance',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      Compliance & Risk
+    </div>
+    <div class="rtab" onclick="showPage('scenarios',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+      Saved Scenarios
+    </div>
+    <div class="rtab" onclick="showPage('docs',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Document Generator
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- PAGE 1: JURISDICTION COMPARE -->
+    <div class="page on" id="page-compare">
+      <div class="pg-title">Jurisdiction Intelligence</div>
+      <div class="pg-sub">16 jurisdictions · Filter, compare, deep-dive</div>
+      <div class="filter-strip" id="filterStrip"></div>
+      <div class="j-grid" id="jGrid"></div>
+      <div id="jDetail"></div>
+    </div>
+
+    <!-- PAGE 2: AI AGENT -->
+    <div class="page" id="page-agent" style="padding:0;max-width:100%">
+      <div class="agent-layout">
+        <div class="agent-sidebar">
+          <div class="agent-sidebar-top">
+            <div class="agent-sidebar-title">Quick prompts</div>
+            <div id="promptChips"></div>
+          </div>
+          <div class="agent-sidebar-bottom">
+            <div class="agent-sidebar-label">Context</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--mono);line-height:1.6">
+              This agent has deep expertise in:<br><br>
+              · International tax law<br>
+              · Offshore structuring (BEPS/Pillar 2)<br>
+              · Treaty networks & WHT<br>
+              · Substance requirements<br>
+              · CRS/FATCA compliance<br>
+              · Transfer pricing<br>
+              · Corporate residency rules<br>
+              · Fund structures<br>
+              · Family office planning
+            </div>
+          </div>
+        </div>
+        <div class="chat-area">
+          <div class="api-key-bar">
+            <span>Anthropic API key:</span>
+            <input type="password" id="apiKey" placeholder="sk-ant-..." style="width:260px">
+            <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">Stored locally only · never transmitted except to Anthropic</span>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="msg msg-a">
+              <div class="msg-avatar">IQ</div>
+              <div class="msg-bubble">Welcome. I'm your offshore structuring specialist with expertise in international tax planning, jurisdiction selection, entity structures, treaty networks, substance requirements, and compliance frameworks.<br><br>Ask me anything — from comparing specific jurisdictions for your situation, to designing a full holding structure, to understanding BEPS implications for your business. I'll give you advisor-level analysis, not generic information.<br><br>What are you working on?</div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea id="chatInput" placeholder="Ask about structuring, jurisdictions, tax treaties, substance requirements…" rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="btn btn-accent" onclick="sendChat()" id="sendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: STRUCTURE BUILDER -->
+    <div class="page" id="page-builder">
+      <div class="pg-title">Structure Builder</div>
+      <div class="pg-sub">Drag entities onto the canvas to design your holding structure</div>
+      <div class="builder-tools">
+        <button class="btn" onclick="clearCanvas()">Clear canvas</button>
+        <button class="btn btn-gold" onclick="analyzeStructure()">Analyze structure ↗</button>
+        <button class="btn" onclick="saveStructureScenario()">Save as scenario</button>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:8px">Click entity to select · Drag to reposition · Click two entities to connect</span>
+      </div>
+      <div class="card-sm" style="margin-bottom:14px">
+        <div class="label">Entity palette — click to add to canvas</div>
+        <div class="builder-palette" id="builderPalette"></div>
+      </div>
+      <div class="canvas-wrap">
+        <div class="builder-canvas" id="builderCanvas">
+          <svg class="connectors" id="svgConnectors"></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none" id="canvasHint">
+            <div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px">
+              Click entities above to add them to the canvas<br>
+              <span style="font-size:10px;opacity:.6">Then drag to arrange your structure</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="structureAnalysis" style="margin-top:16px"></div>
+    </div>
+
+    <!-- PAGE 4: COST CALCULATOR -->
+    <div class="page" id="page-calc">
+      <div class="pg-title">Cost & Tax Calculator</div>
+      <div class="pg-sub">Model the real economics of your offshore structure</div>
+      <div class="calc-grid">
+        <div class="card">
+          <div class="label">Business parameters</div>
+          <div class="calc-input-group">
+            <div class="calc-row"><label>Annual profit (USD)</label><input type="number" id="c_profit" value="500000" oninput="calcUpdate()"></div>
+            <div class="calc-row"><label>Jurisdiction</label>
+              <select id="c_jur" oninput="calcUpdate()"></select>
+            </div>
+            <div class="calc-row"><label>Home country tax rate (%)</label><input type="number" id="c_home" value="40" oninput="calcUpdate()"></div>
+            <div class="calc-row"><label>Dividend withholding to home (%)</label><input type="number" id="c_wht" value="15" oninput="calcUpdate()"></div>
+            <div class="calc-row"><label>Years of operation</label><input type="number" id="c_years" value="5" oninput="calcUpdate()"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="label">Offshore setup & running costs</div>
+          <div class="calc-input-group">
+            <div class="calc-row"><label>One-time setup cost (USD)</label><input type="number" id="c_setup" value="8000" oninput="calcUpdate()"></div>
+            <div class="calc-row"><label>Annual compliance cost (USD)</label><input type="number" id="c_annual" value="15000" oninput="calcUpdate()"></div>
+            <div class="calc-row"><label>Transfer pricing study (USD/yr)</label><input type="number" id="c_tp" value="0" oninput="calcUpdate()"></div>
+            <div class="calc-row"><label>Director / substance costs (USD/yr)</label><input type="number" id="c_sub" value="10000" oninput="calcUpdate()"></div>
+          </div>
+          <div class="divider"></div>
+          <div class="result-cards" id="calcResults"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="label">5-year tax waterfall analysis</div>
+        <div class="waterfall" id="calcWaterfall"></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="label">Breakeven analysis</div>
+        <div id="calcBreakeven" style="font-size:13px;color:var(--text2);line-height:1.8"></div>
+      </div>
+    </div>
+
+    <!-- PAGE 5: COMPLIANCE -->
+    <div class="page" id="page-compliance">
+      <div class="pg-title">Compliance & Risk Checker</div>
+      <div class="pg-sub">OECD blacklist status · FATF · Substance requirements · CRS participation</div>
+      <div class="grid2" style="gap:24px;margin-bottom:24px">
+        <div>
+          <div class="label" style="margin-bottom:12px">Jurisdiction risk overview</div>
+          <div class="risk-grid" id="riskGrid"></div>
+        </div>
+        <div>
+          <div class="label" style="margin-bottom:12px">Structure compliance checklist</div>
+          <div style="margin-bottom:12px;display:flex;gap:8px">
+            <select id="checkJur" style="flex:1" onchange="renderChecklist()"></select>
+          </div>
+          <div class="checklist" id="checklistItems"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="label">BEPS / Pillar Two exposure</div>
+        <div id="bepsInfo" style="font-size:13px;color:var(--text2);line-height:1.8;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- PAGE 6: SCENARIOS -->
+    <div class="page" id="page-scenarios">
+      <div class="pg-title">Saved Scenarios</div>
+      <div class="pg-sub">Client and internal structuring profiles · stored locally in this browser</div>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <button class="btn btn-accent" onclick="openNewScenario()">+ New scenario</button>
+        <button class="btn" onclick="exportScenarios()">Export all (JSON)</button>
+        <button class="btn" onclick="importScenarios()">Import</button>
+      </div>
+      <div class="scenario-list" id="scenarioList"></div>
+    </div>
+
+    <!-- PAGE 7: DOCUMENT GENERATOR -->
+    <div class="page" id="page-docs">
+      <div class="pg-title">Document Generator</div>
+      <div class="pg-sub">AI-generated structuring memos, briefing notes, and term sheets</div>
+      <div class="label">Select document type</div>
+      <div class="doc-templates" id="docTemplates"></div>
+      <div id="docForm" style="display:none">
+        <div class="card" style="margin-bottom:14px">
+          <div class="label">Document parameters</div>
+          <div class="grid2" id="docFormFields"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <button class="btn btn-accent" onclick="generateDoc()">Generate document</button>
+          <button class="btn" onclick="copyDoc()">Copy to clipboard</button>
+        </div>
+      </div>
+      <div id="docOutput" class="doc-output" style="display:none"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SCENARIO MODAL -->
+<div class="modal-overlay" id="scenarioModal">
+  <div class="modal">
+    <div class="modal-title">New scenario</div>
+    <div class="modal-sub">Save a client or internal structuring profile</div>
+    <div class="form-row"><label>Scenario name</label><input id="sc_name" placeholder="e.g. Client A — Africa holding structure"></div>
+    <div class="form-row"><label>Business type</label><input id="sc_biz" placeholder="e.g. PE fund, tech company, trading"></div>
+    <div class="form-row"><label>Home country</label><input id="sc_home" placeholder="e.g. United Kingdom"></div>
+    <div class="form-row"><label>Annual profit (USD)</label><input type="number" id="sc_profit" placeholder="500000"></div>
+    <div class="form-row"><label>Primary jurisdiction</label><select id="sc_jur"></select></div>
+    <div class="form-row"><label>Secondary jurisdiction (optional)</label><select id="sc_jur2"><option value="">None</option></select></div>
+    <div class="form-row"><label>Notes</label><textarea id="sc_notes" rows="3" placeholder="Key considerations, requirements, open questions…" style="width:100%"></textarea></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-accent" onclick="saveScenario()">Save scenario</button>
+      <button class="btn" onclick="closeScenarioModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const PASS = 'offshore2024';
+const J = [
+  {id:'bvi',flag:'🇻🇬',name:'British Virgin Islands',short:'BVI',type:'Offshore IBC',region:'Caribbean',corp:0,cap:0,vat:0,wht:0,residency:false,annualVisit:false,substanceLow:true,treaty:false,privacy:4,ease:5,rep:2,setup:1500,annual:850,setup_range:'$1k–2k',annual_range:'$500–1.2k',time:'3–7 days',usedFor:'Holding, IP, SPVs, offshore trading',notes:'World\'s most popular offshore vehicle. 400k+ active IBCs. No public beneficial owner register. No corporate tax, VAT, or withholding. Minimal substance for holding activities. OECD/EU watch list pressure increasing.',pros:['Zero corporate tax','No WHT on dividends','No public BO register','Very fast setup','Minimal compliance'],cons:['No tax treaties','EU blacklist risk','Substance rules tightening','No prestige'],tags:['zero','privacy','nomres','substance'],scores:{tax:10,rep:3,treaty:1,ease:9,banking:5,infra:3,location:5,cost:9},risk:{oecd:'grey',fatf:'monitored',crs:false,beps:'low'}},
+  {id:'cayman',flag:'🇰🇾',name:'Cayman Islands',short:'Cayman',type:'Exempt Company',region:'Caribbean',corp:0,cap:0,vat:0,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:false,privacy:4,ease:4,rep:3,setup:5500,annual:3500,setup_range:'$3k–8k',annual_range:'$2k–5k',time:'5–14 days',usedFor:'Hedge funds, PE, investment vehicles',notes:'Global capital of hedge funds. Very high fees. Economic substance rules apply. Common law. No tax for exempt companies.',pros:['Zero tax for exempt cos','World-class fund infrastructure','Common law system'],cons:['Expensive','OECD risk','Not for general trading'],tags:['zero','nomres'],scores:{tax:10,rep:5,treaty:1,ease:6,banking:7,infra:7,location:5,cost:4},risk:{oecd:'grey',fatf:'ok',crs:true,beps:'medium'}},
+  {id:'panama',flag:'🇵🇦',name:'Panama',short:'Panama',type:'SA / Foundation',region:'Central America',corp:0,cap:0,vat:7,wht:0,residency:false,annualVisit:false,substanceLow:true,treaty:false,privacy:4,ease:4,rep:2,setup:2000,annual:1000,setup_range:'$1.5k–3k',annual_range:'$500–1.5k',time:'3–10 days',usedFor:'Asset protection, foundations, holding',notes:'Territorial tax — foreign income 100% exempt. Powerful foundation structure. Reputation damaged by Panama Papers 2016.',pros:['Foreign income 100% exempt','Powerful foundation structure','Strategic hub'],cons:['Panama Papers reputational damage','FATF grey list','Poor treaty network'],tags:['zero','privacy','nomres','substance'],scores:{tax:9,rep:2,treaty:2,ease:7,banking:4,infra:4,location:6,cost:8},risk:{oecd:'grey',fatf:'monitored',crs:true,beps:'low'}},
+  {id:'delaware',flag:'🇺🇸',name:'Delaware (USA)',short:'Delaware',type:'LLC / C-Corp',region:'North America',corp:21,cap:0,vat:0,wht:21,residency:false,annualVisit:false,substanceLow:true,treaty:true,privacy:3,ease:5,rep:5,setup:1000,annual:1500,setup_range:'$500–1.5k',annual_range:'$300–2.5k',time:'1–3 days',usedFor:'US market access, startup fundraising, holding',notes:'World\'s most established corporate law. Standard for US VC-backed startups. LLC can be disregarded entity for non-US owners. 21% federal corporate tax.',pros:['World\'s most respected corp law','Essential for US VC funding','Global credibility','Full US treaty network'],cons:['21% federal tax','Expensive franchise tax','Complex US filing obligations'],tags:['nomres','treaty'],scores:{tax:5,rep:9,treaty:9,ease:9,banking:9,infra:9,location:8,cost:7},risk:{oecd:'clean',fatf:'ok',crs:false,beps:'high'}},
+  {id:'ireland',flag:'🇮🇪',name:'Ireland',short:'Ireland',type:'EU Company',region:'Europe',corp:12.5,cap:33,vat:23,wht:20,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:4,rep:7,setup:3500,annual:5500,setup_range:'$2k–5k',annual_range:'$3k–8k',time:'5–10 days',usedFor:'EU HQ, IP holding, tech company base',notes:'Home to Apple, Google, Meta EU HQs. 12.5% CIT. Knowledge Development Box: 6.25% on IP income. Full EU treaty network. Pillar Two pushing effective rate up for large MNCs.',pros:['12.5% (6.25% for IP)','EU market access','73+ treaties','English language','Highly reputable'],cons:['Pillar Two impact for large MNCs','Real substance required','High operating costs'],tags:['treaty'],scores:{tax:7,rep:9,treaty:10,ease:6,banking:8,infra:9,location:8,cost:3},risk:{oecd:'clean',fatf:'ok',crs:true,beps:'high'}},
+  {id:'mauritius',flag:'🇲🇺',name:'Mauritius',short:'Mauritius',type:'GBC1 / GBC2',region:'Indian Ocean',corp:3,cap:0,vat:15,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:3,ease:4,rep:6,setup:4000,annual:5000,setup_range:'$2.5k–6k',annual_range:'$3k–7k',time:'4–8 weeks',usedFor:'Africa/India gateway, PE funds, holding',notes:'Africa\'s premier financial centre. GBC1: 3% effective rate via 80% partial exemption. Key treaties with India, Africa. Real substance required.',pros:['Gateway to India & Africa','46+ treaties','~3% effective rate','Well-regulated','English/French speaking'],cons:['Substance requirements real','India treaty benefits reduced post-2016','Limited banking options'],tags:['treaty','zero'],scores:{tax:9,rep:7,treaty:8,ease:5,banking:5,infra:6,location:7,cost:5},risk:{oecd:'clean',fatf:'monitored',crs:true,beps:'medium'}},
+  {id:'dubai',flag:'🇦🇪',name:'Dubai / UAE',short:'Dubai',type:'Free Zone / DIFC',region:'Middle East',corp:9,cap:0,vat:5,wht:0,residency:true,annualVisit:true,substanceLow:false,treaty:true,privacy:3,ease:4,rep:7,setup:12000,annual:10000,setup_range:'$5k–20k',annual_range:'$5k–15k',time:'2–6 weeks',usedFor:'Trading hub, family office, crypto, commodities',notes:'9% CIT for profits >$102k (2023). Free zone 0% if qualifying. Personal income tax 0%. 130+ treaties. Residency + 90–183 days presence needed. CRS participant.',pros:['0% personal income tax','130+ treaties','World-class infrastructure','0% free zone if qualifying','No WHT on dividends'],cons:['Residency + physical presence required','High cost of living','9% CIT changed calculus','Free zone/mainland complexity'],tags:['zero','treaty'],scores:{tax:8,rep:8,treaty:9,ease:5,banking:9,infra:10,location:9,cost:3},risk:{oecd:'clean',fatf:'monitored',crs:true,beps:'medium'}},
+  {id:'singapore',flag:'🇸🇬',name:'Singapore',short:'Singapore',type:'Pte Ltd',region:'Asia',corp:17,cap:0,vat:9,wht:17,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:5,rep:9,setup:3500,annual:5500,setup_range:'$2k–5k',annual_range:'$3k–8k',time:'1–3 days',usedFor:'Asia HQ, holding, private banking, family offices',notes:'Gold standard for APAC. 17% headline but effective 5–10% via exemptions. Territorial tax — foreign income often exempt. Needs local resident director. World\'s easiest place to do business.',pros:['Globally prestigious','Territorial tax — foreign income often exempt','80+ treaties','Easiest to do business','Family office incentives'],cons:['17% nominal rate','Resident director required','High operating costs','Substance expectations high'],tags:['treaty','nomres'],scores:{tax:7,rep:10,treaty:9,ease:9,banking:10,infra:10,location:9,cost:3},risk:{oecd:'clean',fatf:'ok',crs:true,beps:'high'}},
+  {id:'hongkong',flag:'🇭🇰',name:'Hong Kong',short:'Hong Kong',type:'Limited Company',region:'Asia',corp:16.5,cap:0,vat:0,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:5,rep:7,setup:2000,annual:3500,setup_range:'$1.5k–3k',annual_range:'$2k–5k',time:'2–5 days',usedFor:'China/Asia trading, holding, e-commerce',notes:'Territorial tax — offshore profits 0%. No WHT on dividends, no CGT, no VAT. Political risk increased post-2020. Some banks now hesitant.',pros:['Offshore profits 0%','No WHT on dividends','No CGT or VAT','Low bureaucracy'],cons:['Political risk post-2020','Limited treaty network','Some banks hesitant','Public accounts filing'],tags:['treaty','nomres','substance'],scores:{tax:8,rep:7,treaty:6,ease:8,banking:7,infra:8,location:8,cost:6},risk:{oecd:'grey',fatf:'ok',crs:true,beps:'medium'}},
+  {id:'malta',flag:'🇲🇹',name:'Malta',short:'Malta',type:'EU Holding',region:'Europe',corp:5,cap:0,vat:18,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:4,rep:6,setup:5000,annual:7000,setup_range:'$3k–8k',annual_range:'$4k–10k',time:'10–20 days',usedFor:'EU holding, iGaming, financial services, IP',notes:'35% nominal rate; 6/7 shareholder refund gives ~5% effective. EU member. Very popular for iGaming. EU Commission scrutinizing refund system.',pros:['~5% effective rate','EU member','EU parent-subsidiary directive','Good for gaming/FS licensing','English language'],cons:['EU scrutiny of refund system','Complex structuring needed','Post-FATF grey list 2021 (removed 2022)'],tags:['zero','treaty'],scores:{tax:9,rep:5,treaty:9,ease:5,banking:6,infra:6,location:7,cost:4},risk:{oecd:'grey',fatf:'ok',crs:true,beps:'high'}},
+  {id:'netherlands',flag:'🇳🇱',name:'Netherlands',short:'Netherlands',type:'BV / NV',region:'Europe',corp:25.8,cap:31.7,vat:21,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:5,rep:9,setup:8000,annual:14000,setup_range:'$5k–12k',annual_range:'$8k–20k',time:'2–4 weeks',usedFor:'EU HQ, IP holding, royalty routing, intra-group finance',notes:'World\'s largest treaty network (100+). Participation exemption: 100% exempt dividends/gains from subsidiaries. 9% innovation box for IP.',pros:['World\'s largest treaty network','Participation exemption (0% on subsidiary income)','Highly prestigious','EU single market'],cons:['25.8% nominal rate','Very expensive to operate','High substance requirements'],tags:['treaty'],scores:{tax:5,rep:10,treaty:10,ease:6,banking:9,infra:10,location:9,cost:2},risk:{oecd:'clean',fatf:'ok',crs:true,beps:'high'}},
+  {id:'djibouti',flag:'🇩🇯',name:'Djibouti',short:'Djibouti',type:'Free Zone (DIFTZ)',region:'East Africa',corp:25,cap:0,vat:7,wht:10,residency:false,annualVisit:false,substanceLow:true,treaty:false,privacy:3,ease:2,rep:3,setup:6000,annual:4000,setup_range:'$3k–10k',annual_range:'$2k–6k',time:'4–12 weeks',usedFor:'Logistics hub, East Africa/Horn of Africa, port trade',notes:'Not a traditional IFC. Strategic location at Red Sea entrance. DIFTZ free zone with tax exemptions. Gateway to Ethiopia. Limited financial infrastructure. Political risk.',pros:['Strategic Red Sea location','DIFTZ free zone exemptions','Low labour costs','Ethiopia gateway','Port access'],cons:['Limited financial infrastructure','Weak treaty network','Political risk','No banking strength','Not developed as IFC'],tags:['substance'],scores:{tax:6,rep:3,treaty:1,ease:2,banking:2,infra:3,location:9,cost:7},risk:{oecd:'none',fatf:'monitored',crs:false,beps:'none'}},
+  {id:'seychelles',flag:'🇸🇨',name:'Seychelles',short:'Seychelles',type:'Offshore IBC',region:'Indian Ocean',corp:0,cap:0,vat:0,wht:0,residency:false,annualVisit:false,substanceLow:true,treaty:false,privacy:4,ease:5,rep:2,setup:900,annual:550,setup_range:'$600–1.2k',annual_range:'$300–800',time:'1–5 days',usedFor:'Asset holding, nominee holding, offshore accounts',notes:'Cheapest offshore vehicle globally. 1–3 days. Minimal substance. No public register. Many banks refuse. Frequently blacklisted. Best as lower layer in multi-jurisdictional structure.',pros:['Lowest cost globally','Extremely fast setup','Zero taxes','No public register'],cons:['Frequently blacklisted','Banks often refuse','Poor reputation','No treaty access'],tags:['zero','privacy','nomres','substance'],scores:{tax:10,rep:1,treaty:0,ease:10,banking:1,infra:1,location:3,cost:10},risk:{oecd:'blacklisted',fatf:'monitored',crs:false,beps:'none'}},
+  {id:'cyprus',flag:'🇨🇾',name:'Cyprus',short:'Cyprus',type:'EU Company',region:'Europe',corp:12.5,cap:0,vat:19,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:4,rep:5,setup:4000,annual:6000,setup_range:'$2.5k–6k',annual_range:'$3k–8k',time:'5–15 days',usedFor:'EU holding, IP holding, royalties, Eastern Europe',notes:'12.5% CIT. NID on equity can reduce to 2–4%. IP Box: 2.5% effective. Participation exemption on dividends. No WHT outbound. Russia treaty suspended 2022.',pros:['12.5% CIT','IP Box 2.5%','NID reduces effective rate','EU member','No outbound WHT'],cons:['Russia treaty suspended 2022','Historical banking issues','Reputational baggage','Substance required'],tags:['zero','treaty'],scores:{tax:8,rep:5,treaty:8,ease:5,banking:6,infra:6,location:6,cost:6},risk:{oecd:'grey',fatf:'ok',crs:true,beps:'high'}},
+  {id:'isle_man',flag:'🇮🇲',name:'Isle of Man',short:'IoM',type:'0% Company',region:'Europe',corp:0,cap:0,vat:20,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:4,rep:7,setup:3000,annual:3000,setup_range:'$2k–5k',annual_range:'$2k–4k',time:'3–10 days',usedFor:'Insurance, e-gaming, aircraft, ship registration',notes:'0% CIT on most income. UK Crown Dependency. Strong regulation. Popular for insurance captives, gaming licenses, aircraft/ship registration.',pros:['0% CIT on most income','Well-regulated','Good for insurance/gaming/aircraft','Common law'],cons:['Substance rules apply','Not EU member','Limited EU market access'],tags:['zero','nomres'],scores:{tax:10,rep:7,treaty:5,ease:6,banking:6,infra:6,location:5,cost:7},risk:{oecd:'clean',fatf:'ok',crs:true,beps:'medium'}},
+  {id:'estonia',flag:'🇪🇪',name:'Estonia',short:'Estonia',type:'EU OÜ / e-Residency',region:'Europe',corp:0,cap:0,vat:22,wht:0,residency:false,annualVisit:false,substanceLow:false,treaty:true,privacy:2,ease:5,rep:7,setup:600,annual:1200,setup_range:'$300–1k',annual_range:'$500–2k',time:'3–10 days',usedFor:'EU digital businesses, SaaS, remote entrepreneurs',notes:'0% on retained profits — 20% CIT only when dividends distributed. e-Residency: 100% remote setup. EU company with full credibility. Very popular for digital nomads.',pros:['0% on retained profits','EU company — full credibility','e-Residency: fully remote','Very low cost','Digital-first governance'],cons:['20% distribution tax on dividends','Substance questions for complex structures','VAT still applies on EU sales'],tags:['zero','nomres','treaty'],scores:{tax:8,rep:7,treaty:8,ease:8,banking:7,infra:8,location:5,cost:9},risk:{oecd:'clean',fatf:'ok',crs:true,beps:'medium'}}
+];
+
+const FILTERS = [
+  {key:'all',label:'All jurisdictions'},
+  {key:'zero',label:'0% corporate tax',fn:j=>j.corp===0},
+  {key:'privacy',label:'High privacy',fn:j=>j.privacy>=4},
+  {key:'nomres',label:'No residency needed',fn:j=>!j.residency},
+  {key:'treaty',label:'Strong treaties',fn:j=>j.treaty},
+  {key:'substance',label:'Low substance',fn:j=>j.substanceLow},
+  {key:'eu',label:'EU member',fn:j=>['ireland','malta','netherlands','cyprus','estonia'].includes(j.id)},
+];
+
+const PROMPTS = [
+  'Compare BVI vs Cayman for a PE fund structure',
+  'Design a structure for a UK entrepreneur wanting to move abroad',
+  'What substance is really needed for a Mauritius GBC1?',
+  'Explain Pillar Two impact on my Ireland holding company',
+  'Is Dubai free zone still tax-free after the 2023 CIT?',
+  'Best jurisdiction for IP holding with royalty routing',
+  'How does the Cyprus NID actually work in practice?',
+  'Singapore vs Hong Kong for an Asia trading company',
+  'What CRS means practically for my offshore structure',
+  'Design a 3-entity holding structure for African investments',
+  'What are the BEPS substance requirements for a BVI holding co?',
+  'Transfer pricing: how to price intra-group services'
+];
+
+const DOC_TEMPLATES = [
+  {id:'memo',icon:'📄',name:'Structuring memo',desc:'Executive briefing on recommended structure'},
+  {id:'comparison',icon:'⚖️',name:'Jurisdiction comparison note',desc:'Formal comparison of 2–3 jurisdictions'},
+  {id:'checklist',icon:'✅',name:'Setup checklist',desc:'Step-by-step incorporation checklist'},
+  {id:'terms',icon:'📋',name:'Term sheet',desc:'Key terms for proposed structure'},
+  {id:'risk',icon:'⚠️',name:'Risk assessment',desc:'Compliance and risk briefing note'},
+  {id:'minutes',icon:'📝',name:'Board minutes template',desc:'Substance-compliant board meeting minutes'},
+];
+
+// ── STATE ──
+let activeFilter='all', activeJ=null, builderNodes=[], builderConns=[], selectedNode=null, connectMode=false, connectFirst=null;
+let scenarios = JSON.parse(localStorage.getItem('oiq_scenarios')||'[]');
+let activeDocTemplate=null;
+
+// ── AUTH ──
+function tryLogin(){
+  const v=document.getElementById('pwInput').value;
+  if(v===PASS){
+    document.getElementById('gate').style.display='none';
+    document.getElementById('app').style.display='flex';
+    init();
+  } else {
+    document.getElementById('gateErr').textContent='Incorrect access code';
+    setTimeout(()=>document.getElementById('gateErr').textContent='',2000);
+  }
+}
+function logout(){document.getElementById('gate').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('pwInput').value='';}
+
+// ── INIT ──
+function init(){
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  toggleTheme(localStorage.getItem('oiq_theme')||'light');
+  renderFilters();renderGrid();renderPromptChips();populateSelects();renderRiskGrid();renderChecklist();calcUpdate();renderScenarios();renderDocTemplates();renderBuilderPalette();renderBEPS();
+}
+
+function toggleTheme(mode){
+  const useDark = mode ? mode==='dark' : !document.body.classList.contains('dark-theme');
+  document.body.classList.toggle('dark-theme', useDark);
+  localStorage.setItem('oiq_theme', useDark?'dark':'light');
+  const btn=document.getElementById('themeToggle');
+  if(btn){
+    btn.textContent=useDark?'Light mode':'Dark mode';
+    btn.title=`Switch to ${useDark?'light':'dark'} mode`;
+  }
+}
+
+// ── PAGE NAV ──
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('page-'+id).classList.add('on');
+  el.classList.add('on');
+}
+
+// ── MODULE 1: COMPARE ──
+function renderFilters(){
+  const strip=document.getElementById('filterStrip');
+  strip.innerHTML=FILTERS.map(f=>`<button class="filter-btn${f.key==='all'?' on':''}" onclick="setFilter('${f.key}',this)">${f.label}</button>`).join('');
+}
+function setFilter(k,el){
+  activeFilter=k;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderGrid();
+}
+function renderGrid(){
+  const filterFn = FILTERS.find(f=>f.key===activeFilter)?.fn || (()=>true);
+  const items=activeFilter==='all'?J:J.filter(filterFn);
+  const colors={0:'var(--green2)',5:'var(--green2)',3:'var(--green2)',9:'var(--gold2)',12.5:'var(--gold2)',16.5:'var(--gold2)',17:'var(--gold2)',25:'var(--red2)',25.8:'var(--red2)'};
+  document.getElementById('jGrid').innerHTML=items.map(j=>`
+    <div class="j-card${activeJ===j.id?' active':''}" onclick="showJDetail('${j.id}')">
+      <div class="j-flag">${j.flag}</div>
+      <div class="j-name">${j.name}</div>
+      <div class="j-type">${j.type}</div>
+      <div class="j-rate" style="color:${colors[j.corp]||'var(--gold2)'}">${j.corp}%</div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">corporate tax</div>
+      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px">
+        ${j.treaty?'<span class="badge badge-g">Treaties</span>':''}
+        ${!j.residency?'<span class="badge badge-b">No residency</span>':'<span class="badge badge-r">Residency req.</span>'}
+        ${j.substanceLow?'<span class="badge badge-p">Low substance</span>':''}
+      </div>
+    </div>`).join('');
+}
+function showJDetail(id){
+  activeJ=id;
+  const j=J.find(x=>x.id===id);
+  renderGrid();
+  const scoreColors={tax:'#10b981',rep:'#3b82f6',treaty:'#8b5cf6',ease:'#f59e0b',banking:'#14b8a6',cost:'#f59e0b'};
+  document.getElementById('jDetail').innerHTML=`
+    <div class="detail-panel">
+      <div class="detail-header">
+        <div class="detail-flag">${j.flag}</div>
+        <div>
+          <div style="font-size:20px;font-weight:500;font-family:var(--serif)">${j.name}</div>
+          <div style="font-size:12px;color:var(--text3);font-family:var(--mono)">${j.type} · ${j.region}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+          ${riskBadge(j.risk.oecd,'OECD')} ${riskBadge(j.risk.fatf,'FATF')} ${j.risk.crs?'<span class="badge badge-a">CRS</span>':'<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text3)">No CRS</span>'}
+        </div>
+      </div>
+      <div class="detail-body">
+        <div class="detail-section">
+          <h4>Tax rates</h4>
+          ${kv('Corporate tax',`<span class="${j.corp===0?'good':j.corp<15?'warn':'bad'}">${j.corp}%</span>`)}
+          ${kv('Capital gains',`<span class="${j.cap===0?'good':'warn'}">${j.cap}%</span>`)}
+          ${kv('Withholding tax',`<span class="${j.wht===0?'good':j.wht<15?'warn':'bad'}">${j.wht}%</span>`)}
+          ${kv('VAT / GST',`${j.vat}%`)}
+          <h4 style="margin-top:16px">Practicalities</h4>
+          ${kv('Setup cost',j.setup_range)}
+          ${kv('Annual cost',j.annual_range)}
+          ${kv('Time to incorporate',j.time)}
+          ${kv('Residency needed',`<span class="${j.residency?'warn':'good'}">${j.residency?'Yes':'No'}</span>`)}
+          ${kv('Substance req.',`<span class="${j.substanceLow?'good':'warn'}">${j.substanceLow?'Minimal':'Real substance'}</span>`)}
+          ${kv('Tax treaties',`<span class="${j.treaty?'good':'bad'}">${j.treaty?'Strong':'Limited'}</span>`)}
+        </div>
+        <div class="detail-section">
+          <h4>Scores</h4>
+          ${Object.entries(j.scores).map(([k,v])=>`<div class="bar-row"><span class="bar-lbl">${k}</span><div class="bar-track"><div class="bar-fill" style="width:${v*10}%;background:${scoreColors[k]||'var(--accent)'}"></div></div><span class="bar-num">${v}</span></div>`).join('')}
+          <h4 style="margin-top:16px">Best used for</h4>
+          <div style="font-size:12px;color:var(--text2);line-height:1.7">${j.usedFor}</div>
+        </div>
+        <div class="detail-section">
+          <h4>Expert notes</h4>
+          <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px">${j.notes}</div>
+          <h4>Advantages</h4>
+          <div class="pill-list">${j.pros.map(p=>`<span class="pill pill-g">✓ ${p}</span>`).join('')}</div>
+          <h4 style="margin-top:12px">Risks & drawbacks</h4>
+          <div class="pill-list">${j.cons.map(c=>`<span class="pill pill-r">✗ ${c}</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('jDetail').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function kv(k,v){return `<div class="kv-row"><span class="kv-k">${k}</span><span>${v}</span></div>`;}
+function riskBadge(level,label){
+  const map={clean:'badge-g',grey:'badge-a',blacklisted:'badge-r',monitored:'badge-a',ok:'badge-g',none:'',high:'badge-r',medium:'badge-a',low:'badge-g'};
+  return `<span class="badge ${map[level]||''}">${label}: ${level}</span>`;
+}
+
+// ── MODULE 2: AI AGENT ──
+function renderPromptChips(){
+  document.getElementById('promptChips').innerHTML=PROMPTS.map(p=>`<div class="prompt-chip" onclick="usePrompt(\`${p}\`)">${p}</div>`).join('');
+}
+function usePrompt(p){
+  document.getElementById('chatInput').value=p;
+  sendChat();
+}
+function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const msg=input.value.trim();
+  if(!msg)return;
+  const apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){appendMsg('system','Please enter your Anthropic API key above to use the AI agent.');return;}
+  appendMsg('user',msg);
+  input.value='';input.style.height='auto';
+  document.getElementById('sendBtn').disabled=true;
+  const thinkEl=appendThinking();
+  const history=getChatHistory();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        system:`You are a senior international tax and offshore structuring specialist with 20+ years of experience. You have deep expertise in:
+- International tax law, OECD BEPS framework, Pillar Two global minimum tax
+- Offshore jurisdiction selection: BVI, Cayman, Panama, Delaware, Ireland, Mauritius, Dubai/UAE, Singapore, Hong Kong, Malta, Netherlands, Cyprus, Isle of Man, Estonia, Seychelles, Djibouti
+- Treaty networks, withholding tax optimization, transfer pricing
+- Economic substance requirements, CFC rules, controlled foreign corporation legislation
+- CRS/FATCA compliance, beneficial ownership registers, anti-avoidance rules
+- Fund structures (PE, hedge, VC), family offices, holding company structures
+- Corporate residency, management and control tests
+- IP holding structures, royalty routing, innovation boxes
+
+You give direct, expert-level advice like a senior advisor would — specific, actionable, technically accurate. You flag risks and limitations clearly. You don't hedge everything with "consult a lawyer" unless genuinely necessary for complex personal situations. You use proper technical terminology. You know the difference between what works on paper and what works in practice (banking, substance, perception). Keep responses focused and well-structured. Use paragraph breaks for readability.`,
+        messages:history.concat([{role:'user',content:msg}])
+      })
+    });
+    const data=await res.json();
+    thinkEl.remove();
+    if(data.content&&data.content[0]){
+      appendMsg('agent',data.content[0].text);
+    } else {
+      appendMsg('system','Error: '+(data.error?.message||'Unknown error'));
+    }
+  } catch(e){
+    thinkEl.remove();
+    appendMsg('system','Network error. Check your API key and connection.');
+  }
+  document.getElementById('sendBtn').disabled=false;
+}
+function appendMsg(role,text){
+  const area=document.getElementById('chatMessages');
+  const isUser=role==='user';
+  const isAgent=role==='agent';
+  const div=document.createElement('div');
+  div.className=`msg ${isUser?'msg-u':'msg-a'}`;
+  div.innerHTML=`<div class="msg-avatar">${isUser?'YOU':'IQ'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+  return div;
+}
+function appendThinking(){
+  const area=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='msg msg-a';
+  div.innerHTML=`<div class="msg-avatar">IQ</div><div class="msg-bubble"><div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+  return div;
+}
+function getChatHistory(){
+  const msgs=document.querySelectorAll('#chatMessages .msg');
+  const history=[];
+  msgs.forEach(m=>{
+    const isUser=m.classList.contains('msg-u');
+    const text=m.querySelector('.msg-bubble').innerText;
+    if(text&&!m.querySelector('.thinking')){
+      history.push({role:isUser?'user':'assistant',content:text});
+    }
+  });
+  return history.slice(-12);
+}
+
+// ── MODULE 3: STRUCTURE BUILDER ──
+function renderBuilderPalette(){
+  document.getElementById('builderPalette').innerHTML=J.map(j=>`
+    <div class="palette-item" onclick="addNode('${j.id}')">
+      <span style="font-size:16px">${j.flag}</span>
+      <div>
+        <div style="font-weight:500">${j.short}</div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${j.corp}% CIT</div>
+      </div>
+    </div>`).join('');
+}
+let nodeCounter=0;
+function addNode(jid){
+  const j=J.find(x=>x.id===jid);
+  const canvas=document.getElementById('builderCanvas');
+  const rect=canvas.getBoundingClientRect();
+  const x=80+Math.random()*(rect.width-240);
+  const y=60+Math.random()*(Math.max(rect.height-180,120));
+  nodeCounter++;
+  const node={id:'n'+nodeCounter,jid,j,x,y};
+  builderNodes.push(node);
+  document.getElementById('canvasHint').style.display='none';
+  renderCanvas();
+}
+function renderCanvas(){
+  const canvas=document.getElementById('builderCanvas');
+  const existing=canvas.querySelectorAll('.entity-node');
+  existing.forEach(e=>e.remove());
+  builderNodes.forEach(n=>{
+    const el=document.createElement('div');
+    el.className='entity-node'+(selectedNode===n.id?' selected':'');
+    el.id='node-'+n.id;
+    el.style.left=n.x+'px';el.style.top=n.y+'px';
+    el.innerHTML=`<div class="entity-flag">${n.j.flag}</div><div class="entity-name">${n.j.name}</div><div class="entity-type">${n.j.type}</div><div class="entity-tax">${n.j.corp}% CIT</div>`;
+    el.onclick=e=>{e.stopPropagation();selectNode(n.id);};
+    makeDraggable(el,n);
+    canvas.appendChild(el);
+  });
+  renderConnectors();
+}
+function selectNode(id){
+  if(connectMode){
+    if(!connectFirst){connectFirst=id;}
+    else if(connectFirst!==id){
+      builderConns.push({from:connectFirst,to:id});
+      connectFirst=null;connectMode=false;
+      document.querySelectorAll('.entity-node').forEach(n=>n.style.outline='');
+    }
+  } else {
+    selectedNode=selectedNode===id?null:id;
+  }
+  renderCanvas();
+}
+function renderConnectors(){
+  const svg=document.getElementById('svgConnectors');
+  svg.innerHTML='';
+  builderConns.forEach(c=>{
+    const fn=builderNodes.find(n=>n.id===c.from);
+    const tn=builderNodes.find(n=>n.id===c.to);
+    if(!fn||!tn)return;
+    const x1=fn.x+80,y1=fn.y+60,x2=tn.x+80,y2=tn.y;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('stroke','rgba(59,130,246,0.5)');line.setAttribute('stroke-width','1.5');line.setAttribute('stroke-dasharray','5 4');
+    svg.appendChild(line);
+    const arrow=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    const angle=Math.atan2(y2-y1,x2-x1);
+    const ax=x2-12*Math.cos(angle),ay=y2-12*Math.sin(angle);
+    const p1=`${ax+6*Math.cos(angle+Math.PI/2)},${ay+6*Math.sin(angle+Math.PI/2)}`;
+    const p2=`${ax+6*Math.cos(angle-Math.PI/2)},${ay+6*Math.sin(angle-Math.PI/2)}`;
+    const p3=`${x2},${y2}`;
+    arrow.setAttribute('points',`${p1} ${p2} ${p3}`);
+    arrow.setAttribute('fill','rgba(59,130,246,0.7)');
+    svg.appendChild(arrow);
+  });
+}
+function makeDraggable(el,node){
+  let startX,startY,startNodeX,startNodeY,isDragging=false;
+  el.addEventListener('mousedown',e=>{
+    if(connectMode)return;
+    startX=e.clientX;startY=e.clientY;startNodeX=node.x;startNodeY=node.y;isDragging=false;
+    const onMove=e2=>{
+      const dx=e2.clientX-startX,dy=e2.clientY-startY;
+      if(Math.abs(dx)>3||Math.abs(dy)>3)isDragging=true;
+      if(isDragging){node.x=Math.max(0,startNodeX+dx);node.y=Math.max(0,startNodeY+dy);el.style.left=node.x+'px';el.style.top=node.y+'px';renderConnectors();}
+    };
+    const onUp=()=>{document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);};
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
+  });
+}
+function clearCanvas(){builderNodes=[];builderConns=[];nodeCounter=0;selectedNode=null;document.getElementById('canvasHint').style.display='flex';renderCanvas();document.getElementById('structureAnalysis').innerHTML='';}
+async function analyzeStructure(){
+  if(builderNodes.length<2){alert('Add at least 2 entities to analyze the structure.');return;}
+  const names=builderNodes.map(n=>n.j.name).join(', ');
+  const el=document.getElementById('structureAnalysis');
+  el.innerHTML=`<div class="card"><div class="label">Structure analysis</div><div style="color:var(--text3);font-family:var(--mono);font-size:12px">Analyzing ${names}…</div></div>`;
+  const apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){el.innerHTML=`<div class="card"><div style="color:var(--red2);font-family:var(--mono);font-size:12px">Add your API key in the AI Agent tab to enable structure analysis.</div></div>`;return;}
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:`Analyze this offshore structure: ${names}. Briefly cover: (1) how money would flow between entities, (2) key tax benefits and effective rate, (3) main risks and weaknesses, (4) what substance is needed. Be concise and practical.`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'Error analyzing structure.';
+    el.innerHTML=`<div class="card"><div class="label">Structure analysis — ${names}</div><div style="font-size:13px;color:var(--text2);line-height:1.8;margin-top:8px">${text.replace(/\n/g,'<br>')}</div></div>`;
+  } catch(e){el.innerHTML=`<div class="card"><div style="color:var(--red2);font-size:13px">Error: ${e.message}</div></div>`;}
+}
+function saveStructureScenario(){openNewScenario();showPage('scenarios',document.querySelectorAll('.rtab')[5]);}
+
+// ── MODULE 4: CALCULATOR ──
+function populateSelects(){
+  const opts=J.map(j=>`<option value="${j.id}">${j.flag} ${j.name} (${j.corp}% CIT)</option>`).join('');
+  ['c_jur','checkJur','sc_jur','sc_jur2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=(id==='sc_jur2'?'<option value="">None</option>':'')+opts;});
+  const m=document.getElementById('c_jur');if(m)m.value='mauritius';
+}
+function calcUpdate(){
+  const profit=+document.getElementById('c_profit').value||0;
+  const jurId=document.getElementById('c_jur').value;
+  const j=J.find(x=>x.id===jurId)||J[0];
+  const homeRate=+document.getElementById('c_home').value/100||0;
+  const wht=+document.getElementById('c_wht').value/100||0;
+  const years=+document.getElementById('c_years').value||1;
+  const setup=+document.getElementById('c_setup').value||0;
+  const annual=+document.getElementById('c_annual').value||0;
+  const tp=+document.getElementById('c_tp').value||0;
+  const sub=+document.getElementById('c_sub').value||0;
+  const effRate=j.corp/100;
+  const corpTax=profit*effRate;
+  const afterCorp=profit-corpTax;
+  const whtTax=afterCorp*wht;
+  const afterWht=afterCorp-whtTax;
+  const homeTaxIfOnshore=profit*homeRate;
+  const totalCosts=annual+tp+sub;
+  const annualSaving=(homeTaxIfOnshore-corpTax-whtTax-totalCosts);
+  const setupPayback=annualSaving>0?((setup/annualSaving)*12).toFixed(1):null;
+  const fiveYearSaving=annualSaving*years-setup;
+  const fmt=v=>'$'+Math.round(v).toLocaleString();
+  document.getElementById('calcResults').innerHTML=`
+    <div class="result-card"><div class="result-val ${annualSaving>0?'good':'bad'}">${fmt(annualSaving)}</div><div class="result-label">Annual net saving vs onshore</div></div>
+    <div class="result-card"><div class="result-val ${fiveYearSaving>0?'good':'bad'}">${fmt(fiveYearSaving)}</div><div class="result-label">${years}-year net saving (after setup)</div></div>
+    <div class="result-card"><div class="result-val">${(j.corp+wht*100).toFixed(1)}%</div><div class="result-label">Effective rate (corp + WHT)</div></div>
+    <div class="result-card"><div class="result-val ${setupPayback?'':'bad'}">${setupPayback?setupPayback+' months':'Not viable'}</div><div class="result-label">Setup cost payback period</div></div>`;
+  document.getElementById('calcWaterfall').innerHTML=`
+    <div class="wf-row"><span class="wf-label">Annual gross profit</span><span class="wf-val">${fmt(profit)}</span></div>
+    <div class="wf-row"><span class="wf-label">Corporate tax (${j.corp}%)</span><span class="wf-val bad">- ${fmt(corpTax)}</span></div>
+    <div class="wf-row"><span class="wf-label">Dividend withholding (${(wht*100).toFixed(0)}%)</span><span class="wf-val bad">- ${fmt(whtTax)}</span></div>
+    <div class="wf-row"><span class="wf-label">Annual compliance costs</span><span class="wf-val bad">- ${fmt(totalCosts)}</span></div>
+    <div class="wf-row"><span class="wf-label">Net after tax &amp; costs</span><span class="wf-val good">${fmt(profit-corpTax-whtTax-totalCosts)}</span></div>
+    <div class="wf-row"><span class="wf-label" style="font-size:12px;color:var(--text3)">vs. onshore at ${(homeRate*100).toFixed(0)}%</span><span class="wf-val" style="color:var(--text3)">- ${fmt(homeTaxIfOnshore)}</span></div>`;
+  document.getElementById('calcBreakeven').innerHTML=`
+    Using <strong>${j.name}</strong> (${j.corp}% CIT) vs your home rate of ${(homeRate*100).toFixed(0)}%:<br>
+    Annual gross tax saving: ${fmt(homeTaxIfOnshore-corpTax-whtTax)} | Annual structure costs: ${fmt(totalCosts)} | Net annual benefit: <span class="${annualSaving>0?'good':'bad'}">${fmt(annualSaving)}</span><br>
+    One-time setup cost of ${fmt(setup)} ${setupPayback?`recovers in <strong>${setupPayback} months</strong>.`:'is <span class="bad">not recovered</span> — structure may not be financially justified at this profit level.'}<br>
+    ${profit<150000?'<span class="warn">⚠ At this profit level, compliance costs likely outweigh tax savings. Consider simpler structures.</span>':profit>500000?'<span class="good">✓ Profit level supports a full offshore structure with professional substance.</span>':'<span class="warn">Structure is marginal — ensure compliance costs stay lean.</span>'}`;
+}
+
+// ── MODULE 5: COMPLIANCE ──
+function renderRiskGrid(){
+  document.getElementById('riskGrid').innerHTML=J.map(j=>{
+    const r=j.risk;
+    const score=[r.oecd==='clean'?3:r.oecd==='grey'?1:0, r.fatf==='ok'?3:r.fatf==='monitored'?1:0, r.crs?1:2, j.rep].reduce((a,b)=>a+b,0);
+    const pct=Math.round(score/13*100);
+    const color=pct>70?'var(--green2)':pct>45?'var(--gold2)':'var(--red2)';
+    return `<div class="risk-card">
+      <div class="risk-header"><div class="risk-name">${j.flag} ${j.short}</div><div class="risk-score" style="color:${color}">${pct}</div></div>
+      <div class="risk-meter"><div class="risk-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="risk-tags">
+        ${riskBadge(r.oecd,'OECD')} ${riskBadge(r.fatf,'FATF')}
+        ${r.crs?'<span class="badge badge-a">CRS</span>':'<span class="badge" style="background:rgba(255,255,255,.06);color:var(--text3)">No CRS</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderChecklist(){
+  const id=document.getElementById('checkJur').value;
+  const j=J.find(x=>x.id===id)||J[0];
+  const checks=[
+    {status:j.risk.oecd==='clean'?'pass':j.risk.oecd==='blacklisted'?'fail':'warn',text:`OECD status: ${j.risk.oecd}`,sub:`Affects treaty benefits and partner country withholding rates`},
+    {status:j.risk.fatf==='ok'?'pass':'warn',text:`FATF status: ${j.risk.fatf}`,sub:`Affects banking relationships and correspondent banking access`},
+    {status:j.risk.crs?'warn':'pass',text:`CRS participant: ${j.risk.crs?'Yes — information exchanged automatically':'No CRS participation'}`,sub:'CRS determines whether account info reaches your home tax authority'},
+    {status:j.substanceLow?'pass':'warn',text:`Substance requirements: ${j.substanceLow?'Minimal (holding activities)':'Real substance required'}`,sub:'Board meetings, local directors, office, decision-making in jurisdiction'},
+    {status:j.treaty?'pass':'fail',text:`Treaty network: ${j.treaty?'Strong (50+ treaties)':'Limited or none'}`,sub:'Affects withholding tax rates on dividends, interest, and royalties'},
+    {status:j.residency?'warn':'pass',text:`Personal presence: ${j.residency?'Required (90–183 days/year)':'Not required'}`,sub:'Physical presence requirements for director/owner'},
+    {status:j.rep>=6?'pass':j.rep>=4?'warn':'fail',text:`Reputation score: ${j.rep}/10`,sub:'Affects banking, counterparty perception, and client credibility'},
+    {status:j.banking>=6?'pass':j.banking>=4?'warn':'fail',text:`Banking access: ${j.scores.banking>=7?'Strong':j.scores.banking>=5?'Moderate':'Limited'}`,sub:'Ability to open and maintain corporate bank accounts'},
+  ];
+  document.getElementById('checklistItems').innerHTML=checks.map(c=>`
+    <div class="check-row">
+      <div class="check-icon ${c.status}">${c.status==='pass'?'✓':c.status==='fail'?'✗':'!'}</div>
+      <div><div class="check-text">${c.text}</div><div class="check-sub">${c.sub}</div></div>
+    </div>`).join('');
+}
+function renderBEPS(){
+  document.getElementById('bepsInfo').innerHTML=`
+    <strong style="color:var(--text)">Pillar One:</strong> Reallocates taxing rights on profits of large MNCs (>€20bn revenue, >10% margin) to market jurisdictions. Affects primarily the very largest tech and consumer-facing companies. Most offshore structures below this threshold are unaffected.<br><br>
+    <strong style="color:var(--text)">Pillar Two (Global Minimum Tax — 15%):</strong> Applies a 15% minimum effective tax rate on MNCs with >€750m consolidated revenue. Key mechanisms: Income Inclusion Rule (IIR), Undertaxed Profits Rule (UTPR), and Qualified Domestic Minimum Top-up Tax (QDMTT). Ireland, Netherlands, UK, Germany, France, Singapore, South Korea all enacted. Cayman, BVI, Seychelles, Panama not yet enacted but UTPR can apply regardless — home country tops up to 15%.<br><br>
+    <strong style="color:var(--text)">Practical impact by revenue threshold:</strong><br>
+    · Under €750m revenue: Pillar Two does not directly apply — existing structures largely intact<br>
+    · €750m+ revenue: Must model effective tax rate by jurisdiction; expect top-up taxes in low-rate jurisdictions<br>
+    · Ireland 12.5% → effective rate rises to 15% minimum under domestic QDMTT for in-scope MNCs<br>
+    · Free zone 0% structures (Dubai, Cayman) → parent's UTPR applies 15% minimum if below threshold<br><br>
+    <strong style="color:var(--text)">BEPS Actions most relevant to SME structures:</strong> Action 6 (treaty abuse / PPT), Action 7 (PE avoidance), Actions 8–10 (transfer pricing / substance), Action 13 (country-by-country reporting for €750m+ groups).`;
+}
+
+// ── MODULE 6: SCENARIOS ──
+function renderScenarios(){
+  const list=document.getElementById('scenarioList');
+  if(!scenarios.length){list.innerHTML=`<div class="empty-state">No saved scenarios yet<br><span style="font-size:11px;opacity:.5">Create your first scenario to save a client or internal structuring profile</span></div>`;return;}
+  list.innerHTML=scenarios.map((s,i)=>{
+    const j=J.find(x=>x.id===s.jur);
+    const j2=J.find(x=>x.id===s.jur2);
+    return `<div class="scenario-card" onclick="viewScenario(${i})">
+      <div class="scenario-icon">${j?j.flag:'🏢'}</div>
+      <div style="flex:1">
+        <div style="font-weight:500;font-size:14px;margin-bottom:3px">${s.name}</div>
+        <div class="scenario-meta">${s.biz} · ${s.home} · ${s.profit?'$'+Number(s.profit).toLocaleString()+'/yr':''} · Saved ${new Date(s.saved).toLocaleDateString()}</div>
+        <div class="scenario-tags">
+          ${j?`<span class="pill pill-g">${j.flag} ${j.short}</span>`:''}
+          ${j2?`<span class="pill pill-a">${j2.flag} ${j2.short}</span>`:''}
+          ${s.notes?`<span class="pill">${s.notes.substring(0,40)}…</span>`:''}
+        </div>
+      </div>
+      <button class="btn" style="padding:5px 10px;font-size:11px" onclick="event.stopPropagation();deleteScenario(${i})">Delete</button>
+    </div>`;
+  }).join('');
+}
+function openNewScenario(){
+  populateSelects();
+  document.getElementById('scenarioModal').classList.add('open');
+}
+function closeScenarioModal(){document.getElementById('scenarioModal').classList.remove('open');}
+function saveScenario(){
+  const s={
+    name:document.getElementById('sc_name').value||'Unnamed scenario',
+    biz:document.getElementById('sc_biz').value,
+    home:document.getElementById('sc_home').value,
+    profit:document.getElementById('sc_profit').value,
+    jur:document.getElementById('sc_jur').value,
+    jur2:document.getElementById('sc_jur2').value,
+    notes:document.getElementById('sc_notes').value,
+    saved:Date.now()
+  };
+  scenarios.unshift(s);
+  localStorage.setItem('oiq_scenarios',JSON.stringify(scenarios));
+  closeScenarioModal();renderScenarios();
+  ['sc_name','sc_biz','sc_home','sc_profit','sc_notes'].forEach(id=>document.getElementById(id).value='');
+}
+function deleteScenario(i){scenarios.splice(i,1);localStorage.setItem('oiq_scenarios',JSON.stringify(scenarios));renderScenarios();}
+function viewScenario(i){
+  const s=scenarios[i];
+  alert(`${s.name}\n\nBusiness: ${s.biz}\nHome country: ${s.home}\nAnnual profit: $${Number(s.profit||0).toLocaleString()}\n\nNotes:\n${s.notes||'(none)'}`);
+}
+function exportScenarios(){
+  const blob=new Blob([JSON.stringify(scenarios,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='oiq-scenarios.json';a.click();
+}
+function importScenarios(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0];
+    const reader=new FileReader();
+    reader.onload=ev=>{try{scenarios=JSON.parse(ev.target.result);localStorage.setItem('oiq_scenarios',JSON.stringify(scenarios));renderScenarios();}catch(e){alert('Invalid file');}};
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ── MODULE 7: DOCUMENT GENERATOR ──
+function renderDocTemplates(){
+  document.getElementById('docTemplates').innerHTML=DOC_TEMPLATES.map(t=>`
+    <div class="doc-template${activeDocTemplate===t.id?' active':''}" onclick="selectDocTemplate('${t.id}')">
+      <div class="doc-icon">${t.icon}</div>
+      <div class="doc-name">${t.name}</div>
+      <div class="doc-desc">${t.desc}</div>
+    </div>`).join('');
+}
+function selectDocTemplate(id){
+  activeDocTemplate=id;
+  renderDocTemplates();
+  const formFields={
+    memo:`<div class="form-row" style="grid-column:1/-1"><label>Client / scenario name</label><input id="df_client" placeholder="e.g. Acme Holdings Ltd"></div>
+          <div class="form-row"><label>Business type</label><input id="df_biz" placeholder="e.g. SaaS company"></div>
+          <div class="form-row"><label>Home country</label><input id="df_home" placeholder="e.g. United Kingdom"></div>
+          <div class="form-row"><label>Recommended jurisdiction(s)</label><input id="df_jur" placeholder="e.g. Cyprus + BVI holding"></div>
+          <div class="form-row"><label>Annual profit (USD)</label><input id="df_profit" type="number" placeholder="500000"></div>
+          <div class="form-row"><label>Key objectives</label><input id="df_obj" placeholder="e.g. Minimize WHT on dividends, EU market access"></div>`,
+    comparison:`<div class="form-row"><label>Jurisdiction A</label><input id="df_jurA" placeholder="e.g. Ireland"></div>
+                <div class="form-row"><label>Jurisdiction B</label><input id="df_jurB" placeholder="e.g. Cyprus"></div>
+                <div class="form-row"><label>Jurisdiction C (optional)</label><input id="df_jurC" placeholder="e.g. Malta"></div>
+                <div class="form-row"><label>Use case / business type</label><input id="df_usecase" placeholder="e.g. EU IP holding company"></div>`,
+    checklist:`<div class="form-row"><label>Jurisdiction</label><select id="df_jursel">${J.map(j=>`<option value="${j.name}">${j.flag} ${j.name}</option>`).join('')}</select></div>
+               <div class="form-row"><label>Company type / purpose</label><input id="df_purpose" placeholder="e.g. Holding company for trading subsidiaries"></div>`,
+    terms:`<div class="form-row"><label>Structure name</label><input id="df_strname" placeholder="e.g. Project Atlas"></div>
+           <div class="form-row"><label>Jurisdiction</label><input id="df_strjur" placeholder="e.g. Mauritius GBC1"></div>
+           <div class="form-row"><label>Investment / profit amount</label><input id="df_amount" placeholder="e.g. $2m annual profit"></div>
+           <div class="form-row"><label>Key parties</label><input id="df_parties" placeholder="e.g. Holdco (BVI) → Opco (UAE)"></div>`,
+    risk:`<div class="form-row"><label>Jurisdiction(s) in structure</label><input id="df_riskjur" placeholder="e.g. BVI holding, Cyprus intermediate, UK Opco"></div>
+          <div class="form-row"><label>Home country of beneficial owner</label><input id="df_riskowner" placeholder="e.g. Germany"></div>
+          <div class="form-row"><label>Annual group revenue</label><input id="df_riskrev" placeholder="e.g. $5m"></div>`,
+    minutes:`<div class="form-row"><label>Company name</label><input id="df_mco" placeholder="e.g. Meridian Holdings Ltd"></div>
+             <div class="form-row"><label>Jurisdiction</label><select id="df_mjur">${J.map(j=>`<option value="${j.name}">${j.flag} ${j.name}</option>`).join('')}</select></div>
+             <div class="form-row"><label>Meeting date</label><input id="df_mdate" type="date"></div>
+             <div class="form-row"><label>Key agenda items</label><input id="df_magenda" placeholder="e.g. Approve dividend, review treasury policy"></div>`
+  };
+  document.getElementById('docForm').style.display='block';
+  document.getElementById('docFormFields').innerHTML=formFields[id]||'';
+  document.getElementById('docOutput').style.display='none';
+}
+async function generateDoc(){
+  const apiKey=document.getElementById('apiKey').value.trim();
+  if(!apiKey){alert('Please enter your Anthropic API key in the AI Agent tab first.');return;}
+  const t=DOC_TEMPLATES.find(x=>x.id===activeDocTemplate);
+  if(!t)return;
+  const out=document.getElementById('docOutput');
+  out.style.display='block';
+  out.innerHTML='<div class="doc-generating"><div class="dot"></div><div class="dot"></div><div class="dot"></div> Generating document…</div>';
+  const getVal=id=>{const el=document.getElementById(id);return el?el.value:'';};
+  const prompts={
+    memo:`Write a professional structuring memo for: Client: ${getVal('df_client')}, Business: ${getVal('df_biz')}, Home country: ${getVal('df_home')}, Recommended structure: ${getVal('df_jur')}, Annual profit: $${getVal('df_profit')}, Objectives: ${getVal('df_obj')}. Include: Executive Summary, Recommended Structure, Tax Analysis, Key Benefits, Risks & Mitigants, Next Steps. Professional advisory tone.`,
+    comparison:`Write a formal jurisdiction comparison note for: ${getVal('df_jurA')} vs ${getVal('df_jurB')}${getVal('df_jurC')?' vs '+getVal('df_jurC'):''} for use case: ${getVal('df_usecase')}. Cover: corporate tax rates, treaty networks, substance requirements, banking, reputation, OECD/FATF status, costs, and final recommendation. Table format where appropriate.`,
+    checklist:`Write a detailed incorporation checklist for setting up a company in ${getVal('df_jursel')} for purpose: ${getVal('df_purpose')}. Number each step. Include documents needed, timelines, costs, and who is responsible.`,
+    terms:`Draft key terms for structure: ${getVal('df_strname')}, Jurisdiction: ${getVal('df_strjur')}, Amount: ${getVal('df_amount')}, Parties: ${getVal('df_parties')}. Include: Structure overview, Entity types, Shareholding, Profit flow, Tax treatment, Governance, Substance requirements, Estimated costs.`,
+    risk:`Write a compliance and risk assessment for structure using: ${getVal('df_riskjur')}, Beneficial owner in: ${getVal('df_riskowner')}, Group revenue: ${getVal('df_riskrev')}. Cover: OECD/FATF/CRS risks, substance risks, CFC exposure, Pillar Two applicability, banking risks, reputational risks, and mitigation recommendations.`,
+    minutes:`Draft board meeting minutes for: ${getVal('df_mco')}, Jurisdiction: ${getVal('df_mjur')}, Date: ${getVal('df_mdate')}, Agenda: ${getVal('df_magenda')}. Include all standard substance-compliant elements: attendance, quorum, resolutions, management and control language.`
+  };
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
+        system:'You are a senior international tax and corporate structuring lawyer. Generate professional, technically accurate documents. Use proper legal and financial terminology. Format documents clearly with headers and sections.',
+        messages:[{role:'user',content:prompts[activeDocTemplate]}]})
+    });
+    const data=await res.json();
+    out.innerHTML=data.content?.[0]?.text||'Error generating document.';
+  } catch(e){out.innerHTML=`Error: ${e.message}`;}
+}
+function copyDoc(){
+  const text=document.getElementById('docOutput').innerText;
+  navigator.clipboard.writeText(text).then(()=>alert('Copied to clipboard.'));
+}
+</script>
+</body>
+</html>
